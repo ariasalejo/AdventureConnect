@@ -65,20 +65,20 @@ export default function Header() {
           {/* Logo */}
           <div className="flex items-center">
             <Link href="/">
-              <a className="inline-block">
+              <div className="inline-block">
                 <h1 className="text-2xl md:text-3xl font-heading font-bold text-neutral-700">
                   <span className="text-primary">Fame</span>Stream
                 </h1>
-              </a>
+              </div>
             </Link>
           </div>
 
           {/* Desktop Navigation */}
           <nav className="hidden md:flex items-center space-x-6">
             <Link href="/">
-              <a className="text-neutral-700 hover:text-primary font-semibold transition-colors">
+              <div className="text-neutral-700 hover:text-primary font-semibold transition-colors">
                 Inicio
-              </a>
+              </div>
             </Link>
             
             <DropdownMenu>
@@ -94,7 +94,7 @@ export default function Header() {
                   categories?.map((category) => (
                     <DropdownMenuItem key={category.id} asChild>
                       <Link href={`/categoria/${category.slug}`}>
-                        <a className="w-full">{category.name}</a>
+                        <div className="w-full">{category.name}</div>
                       </Link>
                     </DropdownMenuItem>
                   ))
@@ -103,15 +103,15 @@ export default function Header() {
             </DropdownMenu>
             
             <Link href="/articulo/nuevos">
-              <a className="text-neutral-700 hover:text-primary font-semibold transition-colors">
+              <div className="text-neutral-700 hover:text-primary font-semibold transition-colors">
                 Más Recientes
-              </a>
+              </div>
             </Link>
             
             <Link href="/articulo/populares">
-              <a className="text-neutral-700 hover:text-primary font-semibold transition-colors">
+              <div className="text-neutral-700 hover:text-primary font-semibold transition-colors">
                 Populares
-              </a>
+              </div>
             </Link>
           </nav>
 
@@ -161,9 +161,9 @@ export default function Header() {
         <div className={cn("md:hidden py-4 transition-all duration-300", isMobileMenuOpen ? "block" : "hidden")}>
           <nav className="flex flex-col space-y-4">
             <Link href="/">
-              <a className="text-neutral-700 hover:text-primary font-semibold py-2 transition-colors">
+              <div className="text-neutral-700 hover:text-primary font-semibold py-2 transition-colors">
                 Inicio
-              </a>
+              </div>
             </Link>
             
             <div className="py-2">
@@ -186,9 +186,9 @@ export default function Header() {
                 ) : (
                   categories?.map((category) => (
                     <Link key={category.id} href={`/categoria/${category.slug}`}>
-                      <a className="block py-2 text-neutral-700 hover:text-primary transition-colors">
+                      <div className="block py-2 text-neutral-700 hover:text-primary transition-colors">
                         {category.name}
-                      </a>
+                      </div>
                     </Link>
                   ))
                 )}
@@ -196,15 +196,15 @@ export default function Header() {
             </div>
             
             <Link href="/articulo/nuevos">
-              <a className="text-neutral-700 hover:text-primary font-semibold py-2 transition-colors">
+              <div className="text-neutral-700 hover:text-primary font-semibold py-2 transition-colors">
                 Más Recientes
-              </a>
+              </div>
             </Link>
             
             <Link href="/articulo/populares">
-              <a className="text-neutral-700 hover:text-primary font-semibold py-2 transition-colors">
+              <div className="text-neutral-700 hover:text-primary font-semibold py-2 transition-colors">
                 Populares
-              </a>
+              </div>
             </Link>
           </nav>
         </div>
