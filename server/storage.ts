@@ -23,7 +23,7 @@ export interface IStorage {
   getFeaturedArticles(): Promise<ArticleWithCategory[]>;
   getLatestArticles(limit?: number): Promise<ArticleWithCategory[]>;
   getPopularArticles(limit?: number): Promise<ArticleWithCategory[]>;
-  getViralArticles(limit?: number): Promise<ArticleWithCategory[]>; // Added getViralArticles
+  getViralArticles(limit?: number): Promise<ArticleWithCategory[]>; 
   searchArticles(query: string): Promise<ArticleWithCategory[]>;
   createArticle(article: InsertArticle): Promise<Article>;
   incrementArticleViews(id: number): Promise<Article>;
@@ -154,7 +154,7 @@ export class MemStorage implements IStorage {
       .slice(0, limit);
   }
 
-  async getPopularArticles(limit?: number): Promise<ArticleWithCategory[]> {
+  async getPopularArticles(limit: number = 6): Promise<ArticleWithCategory[]> {
     return Array.from(this.articles.values())
       .map(article => this.attachCategory(article))
       .filter((article): article is ArticleWithCategory => article.category !== undefined)
@@ -162,7 +162,7 @@ export class MemStorage implements IStorage {
       .slice(0, limit);
   }
 
-  async getViralArticles(limit?: number): Promise<ArticleWithCategory[]> {
+  async getViralArticles(limit: number = 6): Promise<ArticleWithCategory[]> {
     return Array.from(this.articles.values())
       .map(article => this.attachCategory(article))
       .filter((article): article is ArticleWithCategory => article.category !== undefined)
