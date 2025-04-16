@@ -6,7 +6,8 @@ import type { ArticleWithCategory } from "@shared/schema";
 
 export default function ViralNewsSection() {
   const { data: viralArticles, isLoading } = useQuery<ArticleWithCategory[]>({
-    queryKey: ["/api/articles", { viral: true, limit: 6 }],
+    queryKey: ["/api/articles"],
+    queryFn: () => fetch("/api/articles?viral=true&limit=6").then(res => res.json()),
   });
 
   if (isLoading) {

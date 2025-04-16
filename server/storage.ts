@@ -10,12 +10,12 @@ export interface IStorage {
   getUser(id: number): Promise<User | undefined>;
   getUserByUsername(username: string): Promise<User | undefined>;
   createUser(user: InsertUser): Promise<User>;
-  
+
   // Category methods
   getAllCategories(): Promise<Category[]>;
   getCategoryBySlug(slug: string): Promise<Category | undefined>;
   createCategory(category: InsertCategory): Promise<Category>;
-  
+
   // Article methods
   getAllArticles(): Promise<ArticleWithCategory[]>;
   getArticleBySlug(slug: string): Promise<ArticleWithCategory | undefined>;
@@ -23,6 +23,7 @@ export interface IStorage {
   getFeaturedArticles(): Promise<ArticleWithCategory[]>;
   getLatestArticles(limit?: number): Promise<ArticleWithCategory[]>;
   getPopularArticles(limit?: number): Promise<ArticleWithCategory[]>;
+  getViralArticles(limit?: number): Promise<ArticleWithCategory[]>; // Added getViralArticles
   searchArticles(query: string): Promise<ArticleWithCategory[]>;
   createArticle(article: InsertArticle): Promise<Article>;
   incrementArticleViews(id: number): Promise<Article>;
@@ -43,7 +44,7 @@ export class MemStorage implements IStorage {
     this.currentUserId = 1;
     this.currentCategoryId = 1;
     this.currentArticleId = 1;
-    
+
     // Initialize with some categories
     this.seedCategories();
   }
@@ -58,7 +59,7 @@ export class MemStorage implements IStorage {
       { name: "Internacional", slug: "internacional" },
       { name: "Ciencia", slug: "ciencia" }
     ];
-    
+
     for (const category of defaultCategories) {
       this.createCategory(category);
     }
@@ -81,25 +82,25 @@ export class MemStorage implements IStorage {
     this.users.set(id, user);
     return user;
   }
-  
+
   // Category methods
   async getAllCategories(): Promise<Category[]> {
     return Array.from(this.categories.values());
   }
-  
+
   async getCategoryBySlug(slug: string): Promise<Category | undefined> {
     return Array.from(this.categories.values()).find(
       (category) => category.slug === slug,
     );
   }
-  
+
   async createCategory(insertCategory: InsertCategory): Promise<Category> {
     const id = this.currentCategoryId++;
     const category: Category = { ...insertCategory, id };
     this.categories.set(id, category);
     return category;
   }
-  
+
   // Article methods
   async getAllArticles(): Promise<ArticleWithCategory[]> {
     return Array.from(this.articles.values())
@@ -109,21 +110,21 @@ export class MemStorage implements IStorage {
         new Date(b.publishedAt).getTime() - new Date(a.publishedAt).getTime()
       );
   }
-  
+
   async getArticleBySlug(slug: string): Promise<ArticleWithCategory | undefined> {
     const article = Array.from(this.articles.values()).find(
       (article) => article.slug === slug,
     );
-    
+
     if (!article) return undefined;
-    
+
     return this.attachCategory(article);
   }
-  
+
   async getArticlesByCategory(categorySlug: string): Promise<ArticleWithCategory[]> {
     const category = await this.getCategoryBySlug(categorySlug);
     if (!category) return [];
-    
+
     return Array.from(this.articles.values())
       .filter(article => article.categoryId === category.id)
       .map(article => this.attachCategory(article))
@@ -132,7 +133,7 @@ export class MemStorage implements IStorage {
         new Date(b.publishedAt).getTime() - new Date(a.publishedAt).getTime()
       );
   }
-  
+
   async getFeaturedArticles(): Promise<ArticleWithCategory[]> {
     return Array.from(this.articles.values())
       .filter(article => article.isFeatured)
@@ -142,7 +143,7 @@ export class MemStorage implements IStorage {
         new Date(b.publishedAt).getTime() - new Date(a.publishedAt).getTime()
       );
   }
-  
+
   async getLatestArticles(limit: number = 6): Promise<ArticleWithCategory[]> {
     return Array.from(this.articles.values())
       .map(article => this.attachCategory(article))
@@ -152,18 +153,26 @@ export class MemStorage implements IStorage {
       )
       .slice(0, limit);
   }
-  
-  async getPopularArticles(limit: number = 6): Promise<ArticleWithCategory[]> {
+
+  async getPopularArticles(limit?: number): Promise<ArticleWithCategory[]> {
     return Array.from(this.articles.values())
       .map(article => this.attachCategory(article))
       .filter((article): article is ArticleWithCategory => article.category !== undefined)
       .sort((a, b) => b.viewCount - a.viewCount)
       .slice(0, limit);
   }
-  
+
+  async getViralArticles(limit?: number): Promise<ArticleWithCategory[]> {
+    return Array.from(this.articles.values())
+      .map(article => this.attachCategory(article))
+      .filter((article): article is ArticleWithCategory => article.category !== undefined)
+      .sort((a, b) => b.viewCount - a.viewCount)
+      .slice(0, limit);
+  }
+
   async searchArticles(query: string): Promise<ArticleWithCategory[]> {
     const searchTerms = query.toLowerCase().split(" ");
-    
+
     return Array.from(this.articles.values())
       .filter(article => {
         const titleLower = article.title.toLowerCase();
@@ -178,7 +187,7 @@ export class MemStorage implements IStorage {
         new Date(b.publishedAt).getTime() - new Date(a.publishedAt).getTime()
       );
   }
-  
+
   async createArticle(insertArticle: InsertArticle): Promise<Article> {
     const id = this.currentArticleId++;
     const article: Article = { 
@@ -190,21 +199,21 @@ export class MemStorage implements IStorage {
     this.articles.set(id, article);
     return article;
   }
-  
+
   async incrementArticleViews(id: number): Promise<Article> {
     const article = this.articles.get(id);
     if (!article) throw new Error(`Article with id ${id} not found`);
-    
+
     const updatedArticle = { ...article, viewCount: article.viewCount + 1 };
     this.articles.set(id, updatedArticle);
     return updatedArticle;
   }
-  
+
   // Helper method to attach category to articles
   private attachCategory(article: Article): ArticleWithCategory | Article {
     const category = this.categories.get(article.categoryId);
     if (!category) return article;
-    
+
     return { ...article, category };
   }
 }

@@ -56,6 +56,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
       } else if (req.query.popular === "true") {
         const limit = req.query.limit ? parseInt(req.query.limit as string) : undefined;
         articles = await storage.getPopularArticles(limit);
+      } else if (req.query.viral === "true") {
+        const limit = req.query.limit ? parseInt(req.query.limit as string) : undefined;
+        articles = await storage.getViralArticles(limit);
       } else if (req.query.category) {
         articles = await storage.getArticlesByCategory(req.query.category as string);
       } else if (req.query.search) {
