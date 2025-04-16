@@ -54,28 +54,28 @@ export default function Footer() {
             <h3 className="font-heading font-bold text-xl mb-4">Enlaces Rápidos</h3>
             <ul className="space-y-2">
               <li>
-                <Link href="/">
-                  <span className="text-neutral-300 hover:text-white transition-colors">Inicio</span> {/* Removed nested <a> */}
+                <Link className="text-neutral-300 hover:text-white transition-colors" href="/">
+                  Inicio
                 </Link>
               </li>
               <li>
-                <Link href="/articulo/nuevos">
-                  <span className="text-neutral-300 hover:text-white transition-colors">Más Recientes</span> {/* Removed nested <a> */}
+                <Link className="text-neutral-300 hover:text-white transition-colors" href="/articulo/nuevos">
+                  Más Recientes
                 </Link>
               </li>
               <li>
-                <Link href="/articulo/populares">
-                  <span className="text-neutral-300 hover:text-white transition-colors">Más Populares</span> {/* Removed nested <a> */}
+                <Link className="text-neutral-300 hover:text-white transition-colors" href="/articulo/populares">
+                  Más Populares
                 </Link>
               </li>
               <li>
-                <Link href="/archivo">
-                  <span className="text-neutral-300 hover:text-white transition-colors">Archivos</span> {/* Removed nested <a> */}
+                <Link className="text-neutral-300 hover:text-white transition-colors" href="/archivo">
+                  Archivos
                 </Link>
               </li>
               <li>
-                <Link href="/temas-especiales">
-                  <span className="text-neutral-300 hover:text-white transition-colors">Temas Especiales</span> {/* Removed nested <a> */}
+                <Link className="text-neutral-300 hover:text-white transition-colors" href="/temas-especiales">
+                  Temas Especiales
                 </Link>
               </li>
             </ul>

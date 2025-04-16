@@ -28,7 +28,7 @@ export default function HomePage() {
     <div className="container mx-auto px-4 py-8">
       <CategoryFilter />
       <FeaturedNews />
-      
+
       {/* Latest News Section */}
       <section className="mb-12">
         <div className="flex items-center justify-between mb-6">
@@ -56,9 +56,9 @@ export default function HomePage() {
         ) : (
           <>
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-              {latestArticles?.map((article) => (
+              {latestArticles?.pages.map((page) => page.map((article) => (
                 <ArticleCard key={article.id} article={article} />
-              ))}
+              )))}
             </div>
 
             {/* Load More Button */}
