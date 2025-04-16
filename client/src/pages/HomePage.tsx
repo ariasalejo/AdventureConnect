@@ -4,6 +4,7 @@ import FeaturedNews from "@/components/home/FeaturedNews";
 import ArticleCard from "@/components/home/ArticleCard";
 import PopularNewsSection from "@/components/home/PopularNewsSection";
 import NewsletterSection from "@/components/home/NewsletterSection";
+import ViralNewsSection from "@/components/home/ViralNewsSection";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
 import type { ArticleWithCategory } from "@shared/schema";
@@ -75,6 +76,7 @@ export default function HomePage() {
       </section>
 
       <PopularNewsSection />
+      <ViralNewsSection />
       <NewsletterSection />
     </div>
   );
