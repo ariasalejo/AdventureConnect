@@ -1,5 +1,5 @@
 import { Link } from "wouter";
-import { useQuery } from "@tanstack/react-query";
+import { useQuery, useInfiniteQuery } from "@tanstack/react-query"; // Added useInfiniteQuery import
 import { Facebook, Twitter, Instagram, Youtube, MapPin, Phone, Mail } from "lucide-react";
 import type { Category } from "@shared/schema";
 
@@ -55,27 +55,27 @@ export default function Footer() {
             <ul className="space-y-2">
               <li>
                 <Link href="/">
-                  <a className="text-neutral-300 hover:text-white transition-colors">Inicio</a>
+                  <span className="text-neutral-300 hover:text-white transition-colors">Inicio</span> {/* Removed nested <a> */}
                 </Link>
               </li>
               <li>
                 <Link href="/articulo/nuevos">
-                  <a className="text-neutral-300 hover:text-white transition-colors">Más Recientes</a>
+                  <span className="text-neutral-300 hover:text-white transition-colors">Más Recientes</span> {/* Removed nested <a> */}
                 </Link>
               </li>
               <li>
                 <Link href="/articulo/populares">
-                  <a className="text-neutral-300 hover:text-white transition-colors">Más Populares</a>
+                  <span className="text-neutral-300 hover:text-white transition-colors">Más Populares</span> {/* Removed nested <a> */}
                 </Link>
               </li>
               <li>
                 <Link href="/archivo">
-                  <a className="text-neutral-300 hover:text-white transition-colors">Archivos</a>
+                  <span className="text-neutral-300 hover:text-white transition-colors">Archivos</span> {/* Removed nested <a> */}
                 </Link>
               </li>
               <li>
                 <Link href="/temas-especiales">
-                  <a className="text-neutral-300 hover:text-white transition-colors">Temas Especiales</a>
+                  <span className="text-neutral-300 hover:text-white transition-colors">Temas Especiales</span> {/* Removed nested <a> */}
                 </Link>
               </li>
             </ul>

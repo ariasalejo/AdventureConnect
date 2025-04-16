@@ -1,4 +1,4 @@
-import { useQuery } from "@tanstack/react-query";
+import { useInfiniteQuery } from "@tanstack/react-query";
 import CategoryFilter from "@/components/home/CategoryFilter";
 import FeaturedNews from "@/components/home/FeaturedNews";
 import ArticleCard from "@/components/home/ArticleCard";
