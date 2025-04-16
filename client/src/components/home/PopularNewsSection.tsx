@@ -5,7 +5,8 @@ import type { ArticleWithCategory } from "@shared/schema";
 
 export default function PopularNewsSection() {
   const { data: popularArticles, isLoading } = useQuery<ArticleWithCategory[]>({
-    queryKey: ["/api/articles", { popular: true, limit: 6 }],
+    queryKey: ["/api/articles"],
+    queryFn: () => fetch("/api/articles?popular=true&limit=6").then(res => res.json()),
   });
 
   if (isLoading) {

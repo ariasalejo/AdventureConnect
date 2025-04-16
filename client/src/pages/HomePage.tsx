@@ -10,10 +10,10 @@ import { Skeleton } from "@/components/ui/skeleton";
 import type { ArticleWithCategory } from "@shared/schema";
 
 export default function HomePage() {
-  const { data: latestArticles, isLoading, fetchNextPage, hasNextPage, isFetchingNextPage } = 
-    useQuery<ArticleWithCategory[]>({
-      queryKey: ["/api/articles", { latest: true, limit: 6 }],
-    });
+  const { data: latestArticles, isLoading } = useQuery<ArticleWithCategory[]>({
+    queryKey: ["/api/articles"],
+    queryFn: () => fetch("/api/articles?latest=true&limit=6").then(res => res.json()),
+  });
 
   const handleLoadMore = () => {
     fetchNextPage();

@@ -9,7 +9,8 @@ import type { ArticleWithCategory } from "@shared/schema";
 
 export default function FeaturedNews() {
   const { data: featuredArticles, isLoading } = useQuery<ArticleWithCategory[]>({
-    queryKey: ["/api/articles", { featured: true }],
+    queryKey: ["/api/articles"],
+    queryFn: () => fetch("/api/articles?featured=true").then(res => res.json()),
   });
 
   if (isLoading) {
