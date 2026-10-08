@@ -1,0 +1,26 @@
+name: AdventureConnect CI
+
+on:
+  pull_request:
+    branches: [main, architecture/world-foundation]
+  push:
+    branches: [main, architecture/world-foundation]
+
+permissions:
+  contents: read
+
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci
+      - run: npm run check
+      - run: npm test --if-present
+      - run: npm run build
+      - name: Build production image
+        run: docker build -t adventureconnect:ci .
