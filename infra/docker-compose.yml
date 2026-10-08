@@ -1,0 +1,36 @@
+services:
+  postgres:
+    image: postgres:17
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: adventureconnect
+      POSTGRES_USER: adventureconnect
+      POSTGRES_PASSWORD: change-me-local-only
+    ports:
+      - "5432:5432"
+    volumes:
+      - adventureconnect_postgres:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U adventureconnect -d adventureconnect"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+  meilisearch:
+    image: getmeili/meilisearch:v1.15
+    restart: unless-stopped
+    environment:
+      MEILI_MASTER_KEY: change-me-local-only
+    ports:
+      - "7700:7700"
+    volumes:
+      - adventureconnect_meili:/meili_data
+    healthcheck:
+      test: ["CMD-SHELL", "wget -qO- http://localhost:7700/health >/dev/null 2>&1"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+volumes:
+  adventureconnect_postgres:
+  adventureconnect_meili:
