@@ -1,33 +1,12 @@
-# AdventureConnect Infrastructure
+# Infrastructure
 
-This directory contains reproducible deployment and runtime infrastructure.
+Deployment assets live here and must remain aligned with `DEPLOYMENT_ARCHITECTURE.md`.
 
-## Principles
-- Container-first.
-- PostgreSQL is authoritative persistent state.
-- Meilisearch is disposable derived state.
-- Secrets are injected at runtime.
-- Health checks are explicit.
-- Local development must approximate production topology.
-- Platform-specific configuration must not leak into domain code.
+## Planned layers
 
-## Runtime services
+- `container/` — reproducible application image definitions.
+- `compose/` — local infrastructure for PostgreSQL and Meilisearch.
+- `production/` — provider-specific deployment manifests only when a real target is selected.
+- `scripts/` — safe operational commands and verification.
 
-| Service | Role | Persistence |
-|---|---|---|
-| app | React/Vite delivery + Node API | stateless |
-| postgres | system of record | persistent |
-| meilisearch | search index | rebuildable |
-
-## Deployment contract
-
-The production platform must provide:
-1. HTTPS termination.
-2. Environment variables/secrets.
-3. Persistent PostgreSQL.
-4. Restart-on-failure.
-5. Health checks.
-6. Logs and basic metrics.
-7. A reproducible build from Git.
-
-See `infra/DEPLOYMENT.md` for the operational contract.
+Do not add Kubernetes or cloud-specific complexity until the deployment target and operational need justify it.
