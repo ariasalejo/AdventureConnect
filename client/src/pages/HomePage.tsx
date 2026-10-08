@@ -10,11 +10,17 @@ import { Skeleton } from "@/components/ui/skeleton";
 import type { ArticleWithCategory } from "@shared/schema";
 
 export default function HomePage() {
-  const { data: latestArticles, isLoading, hasNextPage, fetchNextPage, isFetchingNextPage } = useInfiniteQuery<ArticleWithCategory[]>({
+  const { data: latestArticles, isLoading, hasNextPage, fetchNextPage, isFetchingNextPage } = useInfiniteQuery({
     queryKey: ["/api/articles"],
-    queryFn: ({ pageParam = 1 }) => 
-      fetch(`/api/articles?latest=true&limit=6&page=${pageParam}`).then(res => res.json()),
-    getNextPageParam: (lastPage, pages) => 
+    initialPageParam: 1,
+    queryFn: async ({ pageParam }) => {
+      const response = await fetch(`/api/articles?latest=true&limit=6&page=${pageParam}`);
+      if (!response.ok) {
+        throw new Error(`No se pudieron cargar los artículos: ${response.status}`);
+      }
+      return (await response.json()) as ArticleWithCategory[];
+    },
+    getNextPageParam: (lastPage, pages) =>
       lastPage.length === 6 ? pages.length + 1 : undefined,
   });
 
