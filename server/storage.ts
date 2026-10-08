@@ -105,7 +105,7 @@ export class MemStorage implements IStorage {
   async getAllArticles(): Promise<ArticleWithCategory[]> {
     return Array.from(this.articles.values())
       .map(article => this.attachCategory(article))
-      .filter((article): article is ArticleWithCategory => article.category !== undefined)
+      .filter((article): article is ArticleWithCategory => article !== undefined)
       .sort((a, b) => 
         new Date(b.publishedAt).getTime() - new Date(a.publishedAt).getTime()
       );
@@ -128,7 +128,7 @@ export class MemStorage implements IStorage {
     return Array.from(this.articles.values())
       .filter(article => article.categoryId === category.id)
       .map(article => this.attachCategory(article))
-      .filter((article): article is ArticleWithCategory => article.category !== undefined)
+      .filter((article): article is ArticleWithCategory => article !== undefined)
       .sort((a, b) => 
         new Date(b.publishedAt).getTime() - new Date(a.publishedAt).getTime()
       );
@@ -138,7 +138,7 @@ export class MemStorage implements IStorage {
     return Array.from(this.articles.values())
       .filter(article => article.isFeatured)
       .map(article => this.attachCategory(article))
-      .filter((article): article is ArticleWithCategory => article.category !== undefined)
+      .filter((article): article is ArticleWithCategory => article !== undefined)
       .sort((a, b) => 
         new Date(b.publishedAt).getTime() - new Date(a.publishedAt).getTime()
       );
@@ -147,7 +147,7 @@ export class MemStorage implements IStorage {
   async getLatestArticles(limit: number = 6): Promise<ArticleWithCategory[]> {
     return Array.from(this.articles.values())
       .map(article => this.attachCategory(article))
-      .filter((article): article is ArticleWithCategory => article.category !== undefined)
+      .filter((article): article is ArticleWithCategory => article !== undefined)
       .sort((a, b) => 
         new Date(b.publishedAt).getTime() - new Date(a.publishedAt).getTime()
       )
@@ -157,7 +157,7 @@ export class MemStorage implements IStorage {
   async getPopularArticles(limit: number = 6): Promise<ArticleWithCategory[]> {
     return Array.from(this.articles.values())
       .map(article => this.attachCategory(article))
-      .filter((article): article is ArticleWithCategory => article.category !== undefined)
+      .filter((article): article is ArticleWithCategory => article !== undefined)
       .sort((a, b) => b.viewCount - a.viewCount)
       .slice(0, limit);
   }
@@ -165,7 +165,7 @@ export class MemStorage implements IStorage {
   async getViralArticles(limit: number = 6): Promise<ArticleWithCategory[]> {
     return Array.from(this.articles.values())
       .map(article => this.attachCategory(article))
-      .filter((article): article is ArticleWithCategory => article.category !== undefined)
+      .filter((article): article is ArticleWithCategory => article !== undefined)
       .sort((a, b) => b.viewCount - a.viewCount)
       .slice(0, limit);
   }
@@ -182,7 +182,7 @@ export class MemStorage implements IStorage {
         );
       })
       .map(article => this.attachCategory(article))
-      .filter((article): article is ArticleWithCategory => article.category !== undefined)
+      .filter((article): article is ArticleWithCategory => article !== undefined)
       .sort((a, b) => 
         new Date(b.publishedAt).getTime() - new Date(a.publishedAt).getTime()
       );
@@ -191,7 +191,8 @@ export class MemStorage implements IStorage {
   async createArticle(insertArticle: InsertArticle): Promise<Article> {
     const id = this.currentArticleId++;
     const article: Article = { 
-      ...insertArticle, 
+      ...insertArticle,
+      isFeatured: insertArticle.isFeatured ?? false,
       id,
       viewCount: 0,
       createdAt: new Date()
@@ -210,9 +211,9 @@ export class MemStorage implements IStorage {
   }
 
   // Helper method to attach category to articles
-  private attachCategory(article: Article): ArticleWithCategory | Article {
+  private attachCategory(article: Article): ArticleWithCategory | undefined {
     const category = this.categories.get(article.categoryId);
-    if (!category) return article;
+    if (!category) return undefined;
 
     return { ...article, category };
   }
