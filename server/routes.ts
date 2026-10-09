@@ -8,6 +8,38 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // API prefix
   const apiPrefix = "/api";
 
+  // Health check for deployment platforms.
+  app.get(`${apiPrefix}/health`, (_req: Request, res: Response) => {
+    res.status(200).json({ status: "ok", service: "adventureconnect" });
+  });
+
+  // Dedicated travel-news feed: only travel-related categories are returned.
+  app.get(`${apiPrefix}/travel-news`, async (req: Request, res: Response) => {
+    try {
+      const allowedCategories = new Set([
+        "destinos-colombia",
+        "cultura-local",
+        "naturaleza-aventura",
+        "movilidad-viajera",
+        "eventos-colombia",
+        "turismo-sostenible",
+        "economia-turistica",
+      ]);
+      const requestedLimit = Number.parseInt(String(req.query.limit ?? "12"), 10);
+      const limit = Number.isFinite(requestedLimit) ? Math.min(50, Math.max(1, requestedLimit)) : 12;
+      const articles = await storage.getAllArticles();
+      const travelNews = articles
+        .filter((article) => allowedCategories.has(article.category.slug))
+        .sort((a, b) => new Date(b.publishedAt).getTime() - new Date(a.publishedAt).getTime())
+        .slice(0, limit);
+      res.set("Cache-Control", "public, max-age=60, stale-while-revalidate=300");
+      res.json(travelNews);
+    } catch (error) {
+      console.error("Error fetching travel news:", error);
+      res.status(500).json({ message: "No se pudo cargar la actualidad turística" });
+    }
+  });
+
   // Categories API
   app.get(`${apiPrefix}/categories`, async (req: Request, res: Response) => {
     try {
@@ -102,153 +134,108 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  // Seed data endpoint (for demo purposes)
-  app.post(`${apiPrefix}/seed`, async (req: Request, res: Response) => {
+  // Development-only, idempotent seed. Never expose a write seed endpoint in production.
+  app.post(`${apiPrefix}/seed`, async (_req: Request, res: Response) => {
+    if (process.env.NODE_ENV === "production") {
+      return res.status(404).json({ message: "Not found" });
+    }
+
     try {
-      // Create sample articles
-      const sampleArticles = [
-        {
-          title: "Nueva reforma fiscal: Impacto en la economía nacional",
-          slug: "nueva-reforma-fiscal",
-          content: "El gobierno anuncia cambios significativos en la política fiscal que afectarán a diversos sectores de la economía. Los expertos anticipan que estas modificaciones podrían generar un aumento en la recaudación fiscal, pero también preocupaciones sobre posibles efectos en la inversión privada.",
-          excerpt: "El gobierno anuncia cambios significativos en la política fiscal que afectarán a diversos sectores de la economía.",
-          imageUrl: "https://images.unsplash.com/photo-1434030216411-0b793f4b4173?ixlib=rb-1.2.1&auto=format&fit=crop&w=1000&q=80",
-          author: "Ana Martínez",
-          categoryId: 1, // Política
-          isFeatured: true,
-          publishedAt: new Date()
-        },
-        {
-          title: "Nuevos avances en innovación tecnológica",
-          slug: "avances-innovacion-tecnologica",
-          content: "Importantes empresas tecnológicas revelan avances significativos en inteligencia artificial y computación cuántica. Estos desarrollos prometen revolucionar múltiples industrias, desde la medicina hasta la logística global.",
-          excerpt: "Nuevos desarrollos en IA prometen transformar industrias y cambiar la forma en que interactuamos con la tecnología.",
-          imageUrl: "https://images.unsplash.com/photo-1518770660439-4636190af475?ixlib=rb-1.2.1&auto=format&fit=crop&w=500&q=80",
-          author: "Carlos Vega",
-          categoryId: 4, // Tecnología
-          isFeatured: true,
-          publishedAt: new Date(Date.now() - 5 * 60 * 60 * 1000) // 5 hours ago
-        },
-        {
-          title: "Comienza el campeonato mundial de fútbol",
-          slug: "campeonato-mundial-futbol",
-          content: "Las selecciones nacionales se preparan para el torneo más importante del mundo. Análisis de los equipos favoritos y las posibles sorpresas en esta edición del campeonato.",
-          excerpt: "Las selecciones nacionales se preparan para el torneo más importante del mundo.",
-          imageUrl: "https://images.unsplash.com/photo-1579952363873-27f3bade9f55?ixlib=rb-1.2.1&auto=format&fit=crop&w=500&q=80",
-          author: "David López",
-          categoryId: 3, // Deportes
-          isFeatured: true,
-          publishedAt: new Date(Date.now() - 24 * 60 * 60 * 1000) // 1 day ago
-        },
-        {
-          title: "Crisis económica global: Análisis y perspectivas",
-          slug: "crisis-economica-global",
-          content: "Expertos analizan el impacto de la reciente crisis económica y ofrecen perspectivas sobre la recuperación global. Los mercados financieros muestran signos de volatilidad mientras los gobiernos implementan medidas de estímulo.",
-          excerpt: "Expertos analizan el impacto de la reciente crisis económica y ofrecen perspectivas sobre la recuperación global.",
-          imageUrl: "https://images.unsplash.com/photo-1607963412834-a1bbc693aef9?ixlib=rb-1.2.1&auto=format&fit=crop&w=500&q=80",
-          author: "Elena Ramírez",
-          categoryId: 2, // Economía
-          isFeatured: false,
-          publishedAt: new Date(Date.now() - 2 * 24 * 60 * 60 * 1000) // 2 days ago
-        },
-        {
-          title: "Avances revolucionarios en inteligencia artificial",
-          slug: "avances-inteligencia-artificial",
-          content: "Nuevos desarrollos en IA prometen transformar industrias y cambiar la forma en que interactuamos con la tecnología. Investigadores presentan modelos con capacidades de procesamiento de lenguaje natural nunca antes vistas.",
-          excerpt: "Nuevos desarrollos en IA prometen transformar industrias y cambiar la forma en que interactuamos con la tecnología.",
-          imageUrl: "https://images.unsplash.com/photo-1550751827-4bd374c3f58b?ixlib=rb-1.2.1&auto=format&fit=crop&w=500&q=80",
-          author: "Pablo Herrera",
-          categoryId: 4, // Tecnología
-          isFeatured: false,
-          publishedAt: new Date(Date.now() - 5 * 24 * 60 * 60 * 1000) // 5 days ago
-        },
-        {
-          title: "Comienzan las elecciones presidenciales en el país",
-          slug: "elecciones-presidenciales",
-          content: "Los ciudadanos acuden a las urnas para elegir al próximo presidente en unas elecciones históricas para el futuro del país. Se espera una alta participación en este proceso democrático clave.",
-          excerpt: "Los ciudadanos acuden a las urnas para elegir al próximo presidente en unas elecciones históricas para el futuro del país.",
-          imageUrl: "https://images.unsplash.com/photo-1540910419892-4a36d2c3266c?ixlib=rb-1.2.1&auto=format&fit=crop&w=500&q=80",
-          author: "Laura Mendoza",
-          categoryId: 1, // Política
-          isFeatured: false,
-          publishedAt: new Date(Date.now() - 7 * 24 * 60 * 60 * 1000) // 7 days ago
-        },
-        {
-          title: "Comienza el festival de cine internacional",
-          slug: "festival-cine-internacional",
-          content: "La ciudad acoge el prestigioso festival de cine con la participación de reconocidos directores y actores internacionales. Este año el festival presenta una selección de películas independientes que abordan temas sociales relevantes.",
-          excerpt: "La ciudad acoge el prestigioso festival de cine con la participación de reconocidos directores y actores internacionales.",
-          imageUrl: "https://images.unsplash.com/photo-1478720568477-152d9b164e26?ixlib=rb-1.2.1&auto=format&fit=crop&w=500&q=80",
-          author: "Marta Jiménez",
-          categoryId: 5, // Cultura
-          isFeatured: false,
-          publishedAt: new Date(Date.now() - 9 * 24 * 60 * 60 * 1000) // 9 days ago
-        },
-        {
-          title: "Importante descubrimiento científico revoluciona la medicina",
-          slug: "descubrimiento-cientifico",
-          content: "Científicos logran un avance significativo que podría cambiar el tratamiento de diversas enfermedades crónicas. La nueva investigación representa un hito en la comprensión de los mecanismos celulares implicados en el desarrollo de patologías autoinmunes.",
-          excerpt: "Científicos logran un avance significativo que podría cambiar el tratamiento de diversas enfermedades crónicas.",
-          imageUrl: "https://images.unsplash.com/photo-1532094349884-543bc11b234d?ixlib=rb-1.2.1&auto=format&fit=crop&w=500&q=80",
-          author: "Dr. Javier Soto",
-          categoryId: 7, // Ciencia
-          isFeatured: false,
-          publishedAt: new Date(Date.now() - 12 * 24 * 60 * 60 * 1000) // 12 days ago
-        },
-        {
-          title: "Nuevo acuerdo comercial entre potencias mundiales",
-          slug: "acuerdo-comercial-internacional",
-          content: "Las principales economías del mundo firman un histórico acuerdo que modificará las relaciones comerciales globales. El tratado busca eliminar barreras arancelarias y promover una economía más interconectada y sostenible.",
-          excerpt: "Las principales economías del mundo firman un histórico acuerdo que modificará las relaciones comerciales globales.",
-          imageUrl: "https://images.unsplash.com/photo-1444653614773-995cb1ef9efa?ixlib=rb-1.2.1&auto=format&fit=crop&w=500&q=80",
-          author: "Roberto Torres",
-          categoryId: 6, // Internacional
-          isFeatured: false,
-          publishedAt: new Date(Date.now() - 14 * 24 * 60 * 60 * 1000) // 14 days ago
-        },
-        {
-          title: "Reforma educativa: Cambios fundamentales en el sistema de enseñanza",
-          slug: "reforma-educativa",
-          content: "El nuevo plan educativo promete mejorar la calidad de la enseñanza y adaptarla a los desafíos del siglo XXI. Se incorporarán nuevas metodologías de aprendizaje y un mayor énfasis en habilidades digitales y pensamiento crítico.",
-          excerpt: "El nuevo plan educativo promete mejorar la calidad de la enseñanza y adaptarla a los desafíos del siglo XXI.",
-          imageUrl: "https://images.unsplash.com/photo-1503676260728-1c00da094a0b?ixlib=rb-1.2.1&auto=format&fit=crop&w=500&q=80",
-          author: "Carmen Ortiz",
-          categoryId: 1, // Política
-          isFeatured: false,
-          publishedAt: new Date(Date.now() - 3 * 24 * 60 * 60 * 1000) // 3 days ago
-        },
-        {
-          title: "Crisis hídrica: Regiones afectadas por la escasez de agua",
-          slug: "crisis-hidrica",
-          content: "Autoridades implementan medidas urgentes para enfrentar la creciente escasez de agua en diversas zonas del país. Expertos advierten que el cambio climático está intensificando los problemas de disponibilidad de recursos hídricos.",
-          excerpt: "Autoridades implementan medidas urgentes para enfrentar la creciente escasez de agua en diversas zonas del país.",
-          imageUrl: "https://images.unsplash.com/photo-1541252260730-0412e8e2d235?ixlib=rb-1.2.1&auto=format&fit=crop&w=500&q=80",
-          author: "Santiago Morales",
-          categoryId: 6, // Internacional
-          isFeatured: false,
-          publishedAt: new Date(Date.now() - 4 * 24 * 60 * 60 * 1000) // 4 days ago
-        },
-        {
-          title: "Nuevas tecnologías revolucionan el mundo empresarial",
-          slug: "nuevas-tecnologias-empresas",
-          content: "La transformación digital impulsa cambios significativos en la forma de operar de las empresas modernas. La automatización de procesos y el análisis de datos se convierten en elementos clave para la competitividad en un mercado cada vez más exigente.",
-          excerpt: "La transformación digital impulsa cambios significativos en la forma de operar de las empresas modernas.",
-          imageUrl: "https://images.unsplash.com/photo-1519389950473-47ba0277781c?ixlib=rb-1.2.1&auto=format&fit=crop&w=500&q=80",
-          author: "Natalia Vargas",
-          categoryId: 4, // Tecnología
-          isFeatured: false,
-          publishedAt: new Date(Date.now() - 6 * 24 * 60 * 60 * 1000) // 6 days ago
-        }
+      const categoryDefinitions = [
+        { name: "Destinos de Colombia", slug: "destinos-colombia" },
+        { name: "Cultura local", slug: "cultura-local" },
+        { name: "Naturaleza y aventura", slug: "naturaleza-aventura" },
+        { name: "Movilidad viajera", slug: "movilidad-viajera" },
+        { name: "Eventos en Colombia", slug: "eventos-colombia" },
+        { name: "Turismo sostenible", slug: "turismo-sostenible" },
+        { name: "Economía turística", slug: "economia-turistica" },
       ];
 
-      for (const article of sampleArticles) {
-        await storage.createArticle(article);
+      let categories = await storage.getAllCategories();
+      for (const definition of categoryDefinitions) {
+        if (!categories.some((category) => category.slug === definition.slug)) {
+          await storage.createCategory(definition);
+        }
+      }
+      categories = await storage.getAllCategories();
+      const categoryIds = new Map(categories.map((category) => [category.slug, category.id]));
+
+      const editorialGuides = [
+        {
+          title: "Guía de viaje: prepara una escapada a Guatapé",
+          slug: "guia-escapada-guatape",
+          excerpt: "Ideas para organizar una visita al embalse y al pueblo, y confirmar servicios antes de salir.",
+          content: "Guía editorial de AdventureConnect. Antes de viajar a Guatapé, revisa el transporte, los horarios de los operadores, el estado del tiempo y las condiciones de acceso a cada actividad. Confirma precios y disponibilidad directamente con los proveedores locales. Este contenido es orientativo y no representa una noticia de última hora.",
+          imageUrl: "https://images.unsplash.com/photo-1583531352515-8884af319dc1?auto=format&fit=crop&w=1200&q=85",
+          author: "Guía editorial AdventureConnect",
+          categorySlug: "destinos-colombia",
+          isFeatured: true,
+        },
+        {
+          title: "Eje Cafetero: experiencias para conectar con la cultura local",
+          slug: "experiencias-cultura-cafetera",
+          excerpt: "Cómo explorar fincas, pueblos y paisajes con respeto por las comunidades anfitrionas.",
+          content: "Guía editorial de AdventureConnect. Al visitar el Eje Cafetero, busca operadores autorizados, pregunta por el origen de las experiencias y reserva tiempo para conocer la historia de cada lugar. Los servicios, precios y horarios deben verificarse directamente con cada anfitrión.",
+          imageUrl: "https://images.unsplash.com/photo-1518182170546-076c4f6e9e4b?auto=format&fit=crop&w=1200&q=85",
+          author: "Guía editorial AdventureConnect",
+          categorySlug: "cultura-local",
+          isFeatured: true,
+        },
+        {
+          title: "Viajar por áreas naturales de Colombia con responsabilidad",
+          slug: "turismo-responsable-areas-naturales",
+          excerpt: "Buenas prácticas para preparar recorridos, reducir residuos y respetar las normas locales.",
+          content: "Guía editorial de AdventureConnect. Antes de visitar un parque o reserva, consulta las reglas oficiales, los cierres preventivos, los requisitos de ingreso y las recomendaciones de seguridad. No abandones senderos señalizados y evita contratar actividades que dañen la fauna o los ecosistemas.",
+          imageUrl: "https://images.unsplash.com/photo-1470770841072-f978cf4d019e?auto=format&fit=crop&w=1200&q=85",
+          author: "Guía editorial AdventureConnect",
+          categorySlug: "turismo-sostenible",
+          isFeatured: true,
+        },
+        {
+          title: "Antes de salir: una lista útil para revisar tu ruta",
+          slug: "lista-revision-ruta-viajera",
+          excerpt: "Documentos, clima, transporte y contactos que conviene revisar antes de comenzar un trayecto.",
+          content: "Guía editorial de AdventureConnect. Verifica las condiciones de las vías y el transporte con fuentes oficiales, lleva los documentos necesarios y comparte tu itinerario con una persona de confianza. Esta guía no sustituye avisos de tránsito en tiempo real.",
+          imageUrl: "https://images.unsplash.com/photo-1469854523086-cc02fe5d8800?auto=format&fit=crop&w=1200&q=85",
+          author: "Guía editorial AdventureConnect",
+          categorySlug: "movilidad-viajera",
+          isFeatured: false,
+        },
+        {
+          title: "Cómo planear una escapada alrededor de eventos locales",
+          slug: "planear-escapada-eventos-locales",
+          excerpt: "Organiza alojamiento y transporte con anticipación y confirma fechas en canales oficiales.",
+          content: "Guía editorial de AdventureConnect. Las fechas y condiciones de festivales pueden cambiar. Confirma programación, entradas, aforo y recomendaciones de movilidad en los canales oficiales del organizador antes de comprar o desplazarte.",
+          imageUrl: "https://images.unsplash.com/photo-1501386761578-eac5c94b800a?auto=format&fit=crop&w=1200&q=85",
+          author: "Guía editorial AdventureConnect",
+          categorySlug: "eventos-colombia",
+          isFeatured: false,
+        },
+      ];
+
+      let created = 0;
+      for (const item of editorialGuides) {
+        if (await storage.getArticleBySlug(item.slug)) continue;
+        const categoryId = categoryIds.get(item.categorySlug);
+        if (!categoryId) continue;
+        await storage.createArticle({
+          title: item.title,
+          slug: item.slug,
+          excerpt: item.excerpt,
+          content: item.content,
+          imageUrl: item.imageUrl,
+          author: item.author,
+          categoryId,
+          isFeatured: item.isFeatured,
+          publishedAt: new Date(),
+        });
+        created += 1;
       }
 
-      res.status(200).json({ message: "Sample data seeded successfully" });
+      res.status(200).json({ message: "Editorial travel guides checked", created, contentType: "editorial-demo-not-live-news" });
     } catch (error) {
-      console.error("Error seeding data:", error);
-      res.status(500).json({ message: "Error seeding data" });
+      console.error("Error seeding travel guides:", error);
+      res.status(500).json({ message: "Error preparing editorial travel guides" });
     }
   });
 

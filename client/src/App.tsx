@@ -1,6 +1,7 @@
 import { Switch, Route } from "wouter";
 import HomePage from "@/pages/HomePage";
 import TravelPlannerPage from "@/pages/TravelPlannerPage";
+import TravelNewsPage from "@/pages/TravelNewsPage";
 import ArticlePage from "@/pages/ArticlePage";
 import CategoryPage from "@/pages/CategoryPage";
 import SearchResultsPage from "@/pages/SearchResultsPage";
@@ -18,6 +19,7 @@ function App() {
           <main className="flex-grow">
             <Switch>
               <Route path="/" component={HomePage} />
+              <Route path="/noticias" component={TravelNewsPage} />
               <Route path="/articulo/:slug" component={ArticlePage} />
               <Route path="/categoria/:slug" component={CategoryPage} />
               <Route path="/buscar" component={SearchResultsPage} />

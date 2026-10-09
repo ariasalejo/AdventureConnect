@@ -51,13 +51,13 @@ export class MemStorage implements IStorage {
 
   private seedCategories() {
     const defaultCategories: InsertCategory[] = [
-      { name: "Política", slug: "politica" },
-      { name: "Economía", slug: "economia" },
-      { name: "Deportes", slug: "deportes" },
-      { name: "Tecnología", slug: "tecnologia" },
-      { name: "Cultura", slug: "cultura" },
-      { name: "Internacional", slug: "internacional" },
-      { name: "Ciencia", slug: "ciencia" }
+      { name: "Destinos de Colombia", slug: "destinos-colombia" },
+      { name: "Cultura local", slug: "cultura-local" },
+      { name: "Naturaleza y aventura", slug: "naturaleza-aventura" },
+      { name: "Movilidad viajera", slug: "movilidad-viajera" },
+      { name: "Eventos en Colombia", slug: "eventos-colombia" },
+      { name: "Turismo sostenible", slug: "turismo-sostenible" },
+      { name: "Economía turística", slug: "economia-turistica" }
     ];
 
     for (const category of defaultCategories) {
