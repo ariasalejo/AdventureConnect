@@ -1,0 +1,40 @@
+name: AdventureConnect CI and source ZIP
+
+on:
+  push:
+    branches:
+      - delivery/travel-colombia-foundation
+  pull_request:
+    branches:
+      - main
+      - architecture/world-foundation
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - name: Install locked dependencies
+        run: npm ci
+      - name: TypeScript check
+        run: npm run check
+      - name: Production build
+        run: npm run build
+      - name: Package complete source
+        run: git archive --format=zip --output=AdventureConnect-Travel-Colombia.zip HEAD
+      - name: Upload source ZIP
+        uses: actions/upload-artifact@v4
+        with:
+          name: AdventureConnect-Travel-Colombia-source
+          path: AdventureConnect-Travel-Colombia.zip
+          retention-days: 14
