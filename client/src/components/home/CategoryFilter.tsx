@@ -32,7 +32,7 @@ export default function CategoryFilter({ activeCategory }: CategoryFilterProps) 
     <section className="mb-8">
       <h2 className="text-xl font-heading font-bold mb-4">Explorar por categoría</h2>
       <div className="flex flex-wrap gap-2">
-        <Link href="/">
+        <Link href="/noticias">
           <a className={cn(
             "px-4 py-2 rounded-full text-sm font-semibold transition-colors",
             !activeCategory 
