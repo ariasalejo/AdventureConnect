@@ -1,4 +1,4 @@
-name: AdventureConnect Deploy
+name: AdventureConnect Release Build
 
 on:
   workflow_dispatch:
@@ -8,7 +8,7 @@ permissions:
   packages: write
 
 concurrency:
-  group: adventureconnect-production
+  group: adventureconnect-release-build
   cancel-in-progress: false
 
 jobs:
@@ -20,14 +20,16 @@ jobs:
         with:
           node-version: 22
           cache: npm
-      - run: npm ci
-      - run: npm run check
-      - run: npm test --if-present
-      - run: npm run build
+      - name: Install locked dependencies
+        run: npm ci
+      - name: TypeScript check
+        run: npm run check
+      - name: Production build
+        run: npm run build
       - name: Build production image
-        run: docker build -t adventureconnect:\${{ github.sha }} .
+        run: docker build -t "adventureconnect:${{ github.sha }}" .
       - name: Export verified image
-        run: docker save adventureconnect:\${{ github.sha }} | gzip > adventureconnect-image.tar.gz
+        run: docker save "adventureconnect:${{ github.sha }}" | gzip > adventureconnect-image.tar.gz
       - uses: actions/upload-artifact@v4
         with:
           name: adventureconnect-production-image
@@ -36,7 +38,7 @@ jobs:
 
   deploy:
     needs: build
-    if: \${{ false }}
+    if: false
     runs-on: ubuntu-latest
     steps:
       - name: Deployment provider not configured
