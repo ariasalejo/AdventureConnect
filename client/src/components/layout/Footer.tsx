@@ -1,115 +1,29 @@
 import { Link } from "wouter";
-import { useQuery, useInfiniteQuery } from "@tanstack/react-query"; // Added useInfiniteQuery import
-import { Facebook, Twitter, Instagram, Youtube, MapPin, Phone, Mail } from "lucide-react";
-import type { Category } from "@shared/schema";
+import { Compass, Mail, MapPin } from "lucide-react";
 
 export default function Footer() {
-  const { data: categories } = useQuery<Category[]>({
-    queryKey: ["/api/categories"],
-  });
-
   return (
-    <footer className="bg-neutral-800 text-white py-12">
-      <div className="container mx-auto px-4">
-        <div className="grid grid-cols-1 md:grid-cols-4 gap-8">
-          {/* Column 1: About */}
-          <div>
-            <h3 className="font-heading font-bold text-xl mb-4">FameStream News</h3>
-            <p className="text-neutral-300 text-sm mb-4">
-              Portal de noticias comprometido con la información veraz y oportuna 
-              para mantener a la ciudadanía informada sobre los eventos más relevantes.
-            </p>
-            <div className="flex space-x-4">
-              <a href="#" className="text-white hover:text-primary transition-colors" aria-label="Twitter">
-                <Twitter className="h-5 w-5" />
-              </a>
-              <a href="#" className="text-white hover:text-primary transition-colors" aria-label="Facebook">
-                <Facebook className="h-5 w-5" />
-              </a>
-              <a href="#" className="text-white hover:text-primary transition-colors" aria-label="Instagram">
-                <Instagram className="h-5 w-5" />
-              </a>
-              <a href="#" className="text-white hover:text-primary transition-colors" aria-label="YouTube">
-                <Youtube className="h-5 w-5" />
-              </a>
-            </div>
-          </div>
-
-          {/* Column 2: Categories */}
-          <div>
-            <h3 className="font-heading font-bold text-xl mb-4">Categorías</h3>
-            <ul className="space-y-2">
-              {categories?.map((category) => (
-                <li key={category.id}>
-                  <Link href={`/categoria/${category.slug}`} className="text-neutral-300 hover:text-white transition-colors">
-                    {category.name}
-                  </Link>
-                </li>
-              ))}
-            </ul>
-          </div>
-
-          {/* Column 3: Quick Links */}
-          <div>
-            <h3 className="font-heading font-bold text-xl mb-4">Enlaces Rápidos</h3>
-            <ul className="space-y-2">
-              <li>
-                <Link className="text-neutral-300 hover:text-white transition-colors" href="/">
-                  Inicio
-                </Link>
-              </li>
-              <li>
-                <Link className="text-neutral-300 hover:text-white transition-colors" href="/articulo/nuevos">
-                  Más Recientes
-                </Link>
-              </li>
-              <li>
-                <Link className="text-neutral-300 hover:text-white transition-colors" href="/articulo/populares">
-                  Más Populares
-                </Link>
-              </li>
-              <li>
-                <Link className="text-neutral-300 hover:text-white transition-colors" href="/archivo">
-                  Archivos
-                </Link>
-              </li>
-              <li>
-                <Link className="text-neutral-300 hover:text-white transition-colors" href="/temas-especiales">
-                  Temas Especiales
-                </Link>
-              </li>
-            </ul>
-          </div>
-
-          {/* Column 4: Contact */}
-          <div>
-            <h3 className="font-heading font-bold text-xl mb-4">Contacto</h3>
-            <ul className="space-y-2 text-neutral-300">
-              <li className="flex items-start">
-                <MapPin className="h-5 w-5 mt-1 mr-2 flex-shrink-0" />
-                <span>Avenida de la Prensa 123, Ciudad Principal</span>
-              </li>
-              <li className="flex items-center">
-                <Phone className="h-5 w-5 mr-2 flex-shrink-0" />
-                <span>+123 456 7890</span>
-              </li>
-              <li className="flex items-center">
-                <Mail className="h-5 w-5 mr-2 flex-shrink-0" />
-                <span>contacto@famestream.com</span>
-              </li>
-            </ul>
-          </div>
+    <footer className="bg-[#102c25] py-12 text-white">
+      <div className="mx-auto grid max-w-7xl gap-10 px-5 sm:px-8 md:grid-cols-3 lg:px-10">
+        <div>
+          <Link href="/"><a className="inline-flex items-center gap-2 text-xl font-bold"><Compass className="h-6 w-6 text-[#d5f078]" />AdventureConnect</a></Link>
+          <p className="mt-4 max-w-sm text-sm leading-6 text-white/70">Descubre Colombia, planifica tu próxima aventura y conecta con experiencias locales.</p>
         </div>
-
-        <div className="border-t border-neutral-700 mt-8 pt-8 text-center text-neutral-400 text-sm">
-          <p>© {new Date().getFullYear()} FameStream News. Todos los derechos reservados.</p>
-          <div className="mt-4 space-x-4">
-            <a href="#" className="hover:text-white transition-colors">Política de Privacidad</a>
-            <a href="#" className="hover:text-white transition-colors">Términos de Uso</a>
-            <a href="#" className="hover:text-white transition-colors">Política de Cookies</a>
-          </div>
+        <div>
+          <h2 className="font-semibold">Explora</h2>
+          <ul className="mt-4 space-y-3 text-sm text-white/75">
+            <li><Link href="/"><a className="hover:text-[#d5f078]">Destinos</a></Link></li>
+            <li><Link href="/planificador"><a className="hover:text-[#d5f078]">Planificador</a></Link></li>
+            <li><Link href="/noticias"><a className="hover:text-[#d5f078]">Actualidad viajera</a></Link></li>
+          </ul>
+        </div>
+        <div>
+          <h2 className="font-semibold">Una plataforma en construcción</h2>
+          <p className="mt-4 flex items-start gap-2 text-sm leading-6 text-white/70"><MapPin className="mt-1 h-4 w-4 shrink-0 text-[#d5f078]" />Colombia</p>
+          <p className="mt-2 flex items-start gap-2 text-sm leading-6 text-white/70"><Mail className="mt-1 h-4 w-4 shrink-0 text-[#d5f078]" />Los canales de contacto de proveedores se incorporarán con verificación.</p>
         </div>
       </div>
+      <div className="mx-auto mt-10 max-w-7xl border-t border-white/15 px-5 pt-5 text-xs text-white/50 sm:px-8 lg:px-10">© {new Date().getFullYear()} AdventureConnect. Confirma precios, horarios y disponibilidad directamente con cada proveedor.</div>
     </footer>
   );
 }
