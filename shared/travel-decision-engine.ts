@@ -6,6 +6,8 @@ import { z } from "zod";
  * This module is deliberately pure: it does not fetch destinations, quote prices,
  * persist searches, or claim real-time availability. It ranks only the candidate
  * data supplied by a caller and returns the factors behind every score.
+ * `estimatedCostPerPersonCop` means the total trip estimate per traveler for the
+ * selected duration, not a daily rate. Every candidate must explicitly use countryCode "CO".
  */
 
 export const travelStyles = ["nature", "adventure", "culture", "relax"] as const;
@@ -25,6 +27,7 @@ const travelRequestSchema = z.object({
 
 const destinationSchema = z.object({
   id: z.string().trim().min(1).max(120),
+  countryCode: z.literal("CO"),
   name: z.string().trim().min(2).max(160),
   region: z.string().trim().min(2).max(160),
   styles: z.array(z.enum(travelStyles)).max(travelStyles.length),
@@ -40,6 +43,13 @@ const destinationSchema = z.object({
       code: z.ZodIssueCode.custom,
       path: ["maxDays"],
       message: "maxDays no puede ser menor que minDays.",
+    });
+  }
+  if (destination.priceStatus === "verified" && destination.estimatedCostPerPersonCop == null) {
+    context.addIssue({
+      code: z.ZodIssueCode.custom,
+      path: ["estimatedCostPerPersonCop"],
+      message: "Un precio verificado necesita un importe por persona.",
     });
   }
   if (destination.priceStatus === "verified" && !destination.priceSource) {
@@ -71,14 +81,15 @@ export type RecommendationReason = {
   code: "BUDGET_FIT" | "BUDGET_CLOSE" | "BUDGET_OVER" | "BUDGET_UNKNOWN"
     | "DURATION_FIT" | "DURATION_CLOSE" | "DURATION_UNKNOWN"
     | "STYLE_MATCH" | "STYLE_PARTIAL" | "STYLE_MISMATCH"
-    | "PRICE_ESTIMATE" | "PRICE_SOURCE_MISSING" | "PRICE_STALE";
+    | "PRICE_ESTIMATE" | "PRICE_SOURCE_MISSING" | "PRICE_STALE"
+    | "ORIGIN_NOT_ROUTED";
   message: string;
 };
 
 export type TravelRecommendation = {
   destination: z.infer<typeof destinationSchema>;
   score: number;
-  confidence: number;
+  evidenceConfidence: number;
   estimatedGroupCostCop: number | null;
   factors: {
     budget: ScoreFactor;
@@ -376,17 +387,26 @@ export function rankColombiaDestinations(
     return {
       destination,
       score,
-      confidence: quality.confidence,
+      evidenceConfidence: quality.confidence,
       estimatedGroupCostCop: budget.groupCost,
       factors: { budget: budget.factor, duration: duration.factor, style: style.factor },
-      reasons: [budget.reason, duration.reason, style.reason, ...quality.reasons],
-      caveats: quality.caveats,
+      reasons: [
+        budget.reason,
+        duration.reason,
+        style.reason,
+        ...quality.reasons,
+        { code: "ORIGIN_NOT_ROUTED", message: "El origen se registra, pero no se calcula distancia, duración ni coste de transporte porque no hay proveedor de rutas conectado." },
+      ],
+      caveats: [
+        ...quality.caveats,
+        "El origen no modifica la puntuación todavía: distancia, duración y coste de transporte requieren datos de rutas verificados.",
+      ],
     };
   });
 
   recommendations.sort((a, b) =>
     b.score - a.score
-    || b.confidence - a.confidence
+    || b.evidenceConfidence - a.evidenceConfidence
     || (a.estimatedGroupCostCop ?? Number.POSITIVE_INFINITY) - (b.estimatedGroupCostCop ?? Number.POSITIVE_INFINITY)
     || a.destination.name.localeCompare(b.destination.name, "es"),
   );
